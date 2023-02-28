@@ -19,11 +19,11 @@ func main() {
 			{
 				Name:    "claims",
 				Aliases: []string{"c"},
-				Usage:   "generate claims for a JWT token",
+				Usage:   "Generate claims for a JWT token",
 				Action: func(cCtx *cli.Context) error {
 					secret := cCtx.Args().First()
 					if secret == "" {
-						return fmt.Errorf("provide a hex encoded 64 byte secret string")
+						return fmt.Errorf("provide a hex encoded byte secret string")
 					}
 					secretBytes, err := Decode(secret)
 					if err != nil {
@@ -42,11 +42,11 @@ func main() {
 			{
 				Name:    "header",
 				Aliases: []string{"h"},
-				Usage:   "generate the http auth bearer header for a JWT token",
+				Usage:   "Generate the http auth bearer header for a JWT token",
 				Action: func(cCtx *cli.Context) error {
 					secret := cCtx.Args().First()
 					if secret == "" {
-						return fmt.Errorf("provide a hex encoded 64 byte secret string")
+						return fmt.Errorf("provide a hex encoded byte secret string")
 					}
 					secretBytes, err := Decode(secret)
 					if err != nil {
@@ -58,14 +58,14 @@ func main() {
 					if err != nil {
 						return err
 					}
-					fmt.Printf("Authentication Bearer %s\n", s)
+					fmt.Printf("Authorization Bearer %s\n", s)
 					return nil
 				},
 			},
 			{
 				Name:    "generate",
 				Aliases: []string{"g", "gen"},
-				Usage:   "generate a new JWT token",
+				Usage:   "Generate a new hex encoded 32-byte JWT token",
 				Action: func(cCtx *cli.Context) error {
 					var secret [32]byte
 					if _, err := crand.Read(secret[:]); err != nil {
