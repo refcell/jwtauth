@@ -12,10 +12,19 @@ import (
 // go-ethereum [engine-api auth spec].
 //
 // [engine-api auth spec]: https://github.com/ethereum/execution-apis/blob/main/src/engine/authentication.md
-func NewJWTClaims(jwtsecret [32]byte, curr time.Time) (string, error) {
+func NewJWTClaims(jwtsecret [32]byte, curr time.Time, exp ...time.Duration) (string, error) {
 	// Create a new JWT token with the provided time as the issued at time.
+	day := 24 * time.Hour
+	year := 365 * day
+	century := 100 * year
+	iat := jwt.NumericDate{Time: curr}
+	expiry := jwt.NumericDate{Time: curr.Add(century)}
+	if len(exp) > 0 {
+		expiry = jwt.NumericDate{Time: curr.Add(exp[0])}
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iat": &jwt.NumericDate{Time: curr},
+		"iat": &iat,
+		"exp": &expiry,
 	})
 	// Create the signed token string
 	s, err := token.SignedString(jwtsecret[:])

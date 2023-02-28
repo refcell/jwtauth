@@ -20,6 +20,13 @@ func main() {
 				Name:    "claims",
 				Aliases: []string{"c"},
 				Usage:   "Generate claims for a JWT token",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "expiry",
+						Value: fmt.Sprintf("%ds", time.Now().Unix()),
+						Usage: "Unix timestamp with units appended for the expiry of the token (eg. --expiry 1677621775s)",
+					},
+				},
 				Action: func(cCtx *cli.Context) error {
 					secret := cCtx.Args().First()
 					if secret == "" {
@@ -31,11 +38,24 @@ func main() {
 					}
 					var fixedSecretBytes [32]byte
 					copy(fixedSecretBytes[:], secretBytes[:32])
-					s, err := NewJWTClaims(fixedSecretBytes, time.Now())
-					if err != nil {
-						return err
+					expiry := cCtx.String("expiry")
+					if expiry == "" {
+						s, err := NewJWTClaims(fixedSecretBytes, time.Now())
+						if err != nil {
+							return err
+						}
+						fmt.Printf("%s\n", s)
+					} else {
+						exp, err := time.ParseDuration(expiry)
+						if err != nil {
+							return err
+						}
+						s, err := NewJWTClaims(fixedSecretBytes, time.Now(), exp)
+						if err != nil {
+							return err
+						}
+						fmt.Printf("%s\n", s)
 					}
-					fmt.Printf("%s\n", s)
 					return nil
 				},
 			},
@@ -43,6 +63,13 @@ func main() {
 				Name:    "header",
 				Aliases: []string{"h"},
 				Usage:   "Generate the http auth bearer header for a JWT token",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "expiry",
+						Value: fmt.Sprintf("%ds", time.Now().Unix()),
+						Usage: "Unix timestamp with units appended for the expiry of the token (eg. --expiry 1677621775s)",
+					},
+				},
 				Action: func(cCtx *cli.Context) error {
 					secret := cCtx.Args().First()
 					if secret == "" {
@@ -54,11 +81,24 @@ func main() {
 					}
 					var fixedSecretBytes [32]byte
 					copy(fixedSecretBytes[:], secretBytes[:32])
-					s, err := NewJWTClaims(fixedSecretBytes, time.Now())
-					if err != nil {
-						return err
+					expiry := cCtx.String("expiry")
+					if expiry == "" {
+						s, err := NewJWTClaims(fixedSecretBytes, time.Now())
+						if err != nil {
+							return err
+						}
+						fmt.Printf("Authorization: Bearer %s\n", s)
+					} else {
+						exp, err := time.ParseDuration(expiry)
+						if err != nil {
+							return err
+						}
+						s, err := NewJWTClaims(fixedSecretBytes, time.Now(), exp)
+						if err != nil {
+							return err
+						}
+						fmt.Printf("Authorization: Bearer %s\n", s)
 					}
-					fmt.Printf("Authorization Bearer %s\n", s)
 					return nil
 				},
 			},
